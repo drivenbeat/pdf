@@ -35,6 +35,12 @@
               <a class="nav-link" id="next" href="#">next</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" id="zoomin" href="#">zoomin</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="zoomout" href="#">zoomout</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" id="stamp" href="#">stamp</a>
             </li>
             <li class="nav-item">
@@ -62,6 +68,7 @@
     <span style="text-align: center;">stamp: <span id="x_axis"></span> / <span id="y_axis"></span></span><br>
     <span style="text-align: center;">size: <span id="stamp_width"></span> / <span id="stamp_height"></span></span><br>
 
+    <!-- <div id="the-svg"></div> -->
     <div class="row">
         <div class="col-md-6">
           <div class="card flex-md-row mb-4 box-shadow h-md-250">
@@ -276,6 +283,8 @@
         canvas2 = document.getElementById('the-canvas2'),
         context2 = canvas2.getContext('2d');
 
+        var pdfScale = 3; // global scale
+
 
         const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
 
@@ -310,7 +319,7 @@
 
         if(imgFlag) {
 
-            // 좌표 받아 오기
+            // 좌표 받아 
 
             // 이미지 추가
             const pngUrl = '../images/stamp2.png'
@@ -318,14 +327,16 @@
             const pngImage = await pdfDoc.embedPng(pngImageBytes)
             // const pngDims = pngImage.scale(0.5)
             const pngDims = {
-                width : parseInt(document.getElementById('stamp_width').textContent),
-                height : parseInt(document.getElementById('stamp_width').textContent)
+                width : parseInt(document.getElementById('stamp_width').textContent == '' ? 100 : document.getElementById('stamp_width').textContent),
+                height : parseInt(document.getElementById('stamp_width').textContent == ''? 100 : document.getElementById('stamp_width').textContent)
             };
 
             const stampDims = {
-                width : parseInt(document.getElementById('x_axis').textContent),
-                height : parseInt(document.getElementById('y_axis').textContent)
+                width : parseInt(document.getElementById('x_axis').textContent == '' ? 0 : document.getElementById('x_axis').textContent),
+                height : parseInt(document.getElementById('y_axis').textContent == ''? 0 : document.getElementById('y_axis').textContent)
             }
+
+            console.log('x : ', pages[0].getWidth(), 'y : ', pages[0].getHeight())
             pages[0].drawImage(pngImage, {
                 x: pages[0].getWidth() / 2 - stampDims.width / 2 + 75,
                 y: pages[0].getHeight() / 2 - stampDims.height + 250,
@@ -349,12 +360,13 @@
                 document.getElementById('pdf').src = values;
             });
         }   
-
+        
         // aaa();
-
+        
         function bbb() {
             Promise.all([makePDfAsBase64()]).then(values => { 
-                drawPdf(atob(values), )
+                console.log(values); // [3, 1337, "foo"] 
+                drawPdf(atob(values))
             });
         }
 
@@ -387,8 +399,8 @@
             pdf.getPage(pageNumber).then(function(page) {
                 console.log('Page loaded');
                 
-                var scale = 3;
-                var viewport = page.getViewport({scale: scale});
+                // var scale = 3;
+                var viewport = page.getViewport({scale: pdfScale});
 
                 // Prepare canvas using PDF page dimensions
                 // var canvas = document.getElementById('the-canvas');
@@ -405,6 +417,19 @@
                 renderTask.promise.then(function () {
                 console.log('Page rendered');
                 });
+
+
+                
+                // var container = document.getElementById('the-svg');
+                // // SVG rendering by PDF.js
+                // page.getOperatorList()
+                // .then(function (opList) {
+                //     var svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
+                //     return svgGfx.getSVG(opList, viewport);
+                // })
+                // .then(function (svg) {
+                //     container.appendChild(svg);
+                // });
             });
             }, function (reason) {
             // PDF loading error
@@ -441,12 +466,27 @@
             }
         }
 
+        var zoominbutton = document.getElementById("zoomin");
+         zoominbutton.onclick = function() {
+            pdfScale = pdfScale + 0.25;
+            renderPage(pageNum);
+         }
+
+         var zoomoutbutton = document.getElementById("zoomout");
+         zoomoutbutton.onclick = function() {
+            if (pdfScale <= 0.25) {
+               return;
+            }
+            pdfScale = pdfScale - 0.25;
+            renderPage(pageNum);
+         }
+
         function renderPage(num) {
             pageRendering = true;
             // Using promise to fetch the page
             pdfDoc.getPage(num).then(function(page) {
-                var scale = 3;
-                var viewport = page.getViewport({scale: scale});
+                console.log('pdfScale', pdfScale)
+                var viewport = page.getViewport({scale: pdfScale});
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
