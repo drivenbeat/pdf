@@ -1,0 +1,627 @@
+<html>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.4.0"></script>
+    <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample08" aria-controls="navbarsExample08" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+  
+        <div class="collapse navbar-collapse justify-content-md-center" id="navbarsExample08">
+          <ul class="navbar-nav">
+            <!-- <li class="nav-item active">
+              <a class="nav-link" href="#">Centered nav only <span class="sr-only">(current)</span></a>
+            </li> -->
+            <li class="nav-item">
+              <a class="nav-link" id="open" href="#">open</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="prev" href="#">prev</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="next" href="#">next</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="stamp" href="#">stamp</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="save" href="#">save</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="download" href="#">download</a>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link disabled" href="#">Disabled</a>
+            </li> -->
+            <!-- <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown08" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+              <div class="dropdown-menu" aria-labelledby="dropdown08">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+              </div>
+            </li> -->
+          </ul>
+        </div>
+      </nav>
+
+    <span style="text-align: center;">Page: <span id="page_num"></span> / <span id="page_count"></span></span><br>
+    <span style="text-align: center;">stamp: <span id="x_axis"></span> / <span id="y_axis"></span></span><br>
+    <span style="text-align: center;">size: <span id="stamp_width"></span> / <span id="stamp_height"></span></span><br>
+
+    <div class="row">
+        <div class="col-md-6">
+          <div class="card flex-md-row mb-4 box-shadow h-md-250">
+            <div id="canvasParent" class="card-body d-flex flex-column align-items-start">
+                <canvas id="the-canvas" class="dropzone js-drop"></canvas>
+                <!-- <div id="drag1" class="draggable js-drag" style="display: none;">Drag me…</div> -->
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card flex-md-row mb-4 box-shadow h-md-250">
+            <div class="card-body d-flex flex-column align-items-start">
+                <canvas id="the-canvas2" class="dropzone js-drop"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    <br>
+    
+  </body>
+
+  <script>
+    $( function() {
+
+        let transformProp
+        const dragPositions = [1, 2, 3, 4].reduce((acc, n) => {
+            acc[`drag${n}`] = { x: 0, y: 0 }
+            return acc
+        }, {})
+                
+        // setup draggable elements.
+        interact('.js-drag')
+        .resizable({
+            // resize from all edges and corners
+            edges: { left: true, right: true, bottom: true, top: true },
+
+            listeners: {
+                move (event) {
+                    var target = event.target
+                    var x = (parseFloat(target.getAttribute('data-x')) || 0)
+                    var y = (parseFloat(target.getAttribute('data-y')) || 0)
+
+                    // update the element's style
+                    target.style.width = event.rect.width + 'px'
+                    target.style.height = event.rect.height + 'px'
+
+                    // translate when resizing from top or left edges
+                    x += event.deltaRect.left
+                    y += event.deltaRect.top
+
+                    target.style.webkitTransform = target.style.transform =
+                    'translate(' + x + 'px,' + y + 'px)'
+
+                    target.setAttribute('data-x', x)
+                    target.setAttribute('data-y', y)
+                    target.textContent = Math.round(event.rect.width) + '\u00D7' + Math.round(event.rect.height)
+
+                    // width
+                    document.getElementById('stamp_width').textContent = Math.round(event.rect.width);
+                    document.getElementById('stamp_height').textContent = Math.round(event.rect.height);
+                }
+            },
+            modifiers: [
+            // keep the edges inside the parent
+            interact.modifiers.restrictEdges({
+                outer: 'parent'
+            }),
+
+            // minimum size
+            interact.modifiers.restrictSize({
+                min: { width: 50, height: 50 },
+                max: { width: 150, height: 150 },
+            })
+            ],
+
+            // inertia: true
+        })
+        .draggable({
+            listeners: {
+                start (event) {
+                    // console.log('event.target.id', event.target.id)
+                    const position = dragPositions[event.target.id]
+                    // console.log('position', position)
+                    position.x = parseInt(event.target.getAttribute('data-x'), 10) || 0
+                    position.y = parseInt(event.target.getAttribute('data-y'), 10) || 0
+                },
+                move (event) {
+                    const position = dragPositions[event.target.id]
+                    position.x += event.dx
+                    position.y += event.dy
+
+                    if (transformProp) {
+                    event.target.style[transformProp] =
+                        'translate(' + position.x + 'px, ' + position.y + 'px)'
+                    }
+                    else {
+                    event.target.style.left = position.x + 'px'
+                    event.target.style.top  = position.y + 'px'
+                    }
+                },
+                end (event) {
+                    const position = dragPositions[event.target.id]
+                    event.target.setAttribute('data-x', position.x)
+                    event.target.setAttribute('data-y', position.y)
+
+                    var canvas = document.getElementById('the-canvas');
+                    var rect = canvas.getBoundingClientRect();
+                    console.log('rect', rect, rect.left, rect.top)
+                    console.log('position', position.x, position.y)
+                    var ret =  {
+                        // x: position.x - rect.left,
+                        // y: position.y - rect.top
+                        x: position.x,
+                        y: position.y
+                    }
+
+                    // axis
+                    document.getElementById('x_axis').textContent = ret.x;
+                    document.getElementById('y_axis').textContent = ret.y;
+
+                },
+            },
+            modifiers: [
+                interact.modifiers.restrict({
+                    restriction: 'parent',
+                    endOnly: true
+                })
+            ]
+        })
+
+        function setupDropzone (target, accept) {
+            interact(target)
+                .dropzone({
+                accept: accept,
+                ondropactivate: function (event) {
+                    // addClass(event.relatedTarget, '-drop-possible')
+                },
+                ondropdeactivate: function (event) {
+                    // removeClass(event.relatedTarget, '-drop-possible')
+                },
+                })
+                .on('dropactivate', (event) => {
+                const active = event.target.getAttribute('active') | 0
+
+                // change style if it was previously not active
+                if (active === 0) {
+                    // addClass(event.target, '-drop-possible')
+                    event.target.textContent = 'Drop me here!'
+                }
+
+                event.target.setAttribute('active', active + 1)
+                })
+                .on('dropdeactivate', (event) => {
+                const active = event.target.getAttribute('active') | 0
+
+                // change style if it was previously active
+                // but will no longer be active
+                if (active === 1) {
+                    // removeClass(event.target, '-drop-possible')
+                    event.target.textContent = 'Dropzone'
+                }
+
+                event.target.setAttribute('active', active - 1)
+                })
+                .on('dragenter', (event) => {
+                    // addClass(event.target, '-drop-over')
+                    event.relatedTarget.textContent = 'I\'m in'
+                })
+                .on('dragleave', (event) => {
+                    // removeClass(event.target, '-drop-over')
+                    event.relatedTarget.textContent = 'Drag me…'
+                })
+                .on('drop', (event) => {
+                    // removeClass(event.target, '-drop-over')
+                    event.relatedTarget.textContent = 'Dropped'
+                })
+            }
+
+        function showStamp() {
+            // document.getElementById('drag1').style.display = 'block';
+
+            // var stamp = document.getElementById("drag1")
+            // if(stamp != undefined){
+            //     stamp.remove();
+            // }
+
+            var div = document.createElement("div");
+            div.id = "drag1";
+            div.textContent = "drag me..."
+            div.className = "draggable js-drag"
+            var canvas = document.getElementById("canvasParent");
+            canvas.append(div);
+
+            setupDropzone('#the-canvas', '#drag1')
+        }
+
+        //======================================================================================================================
+
+        var pdfDoc = null,
+        pageNum = 1,
+        pageRendering = false,
+        pageNumPending = null,
+        scale = 1,    
+        canvas = document.getElementById('the-canvas'),
+        context = canvas.getContext('2d');
+
+        var pdfDoc2 = null,
+        pageNum2 = 1,
+        pageRendering2 = false,
+        pageNumPending2 = null,
+        scale2 = 1,    
+        canvas2 = document.getElementById('the-canvas2'),
+        context2 = canvas2.getContext('2d');
+
+
+        const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
+
+        async function makePDfAsBase64(imgFlag) {
+        // Fetch an existing PDF document
+        const url = '../pdf/pdftest.pdf'
+        //   const url = 'https://pdf-lib.js.org/assets/with_update_sections.pdf'
+            const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
+
+        // Load a PDFDocument from the existing PDF bytes
+        const pdfDoc = await PDFDocument.load(existingPdfBytes)
+
+        // Embed the Helvetica font
+        const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+
+        // Get the first page of the document
+        const pages = pdfDoc.getPages()
+        const firstPage = pages[0]
+
+        // Get the width and height of the first page
+        const { width, height } = firstPage.getSize()
+
+        // // Draw a string of text diagonally across the first page
+        // firstPage.drawText('This text was added with JavaScript!', {
+        //     x: 5,
+        //     y: height / 2 + 300,
+        //     size: 50,
+        //     font: helveticaFont,
+        //     color: rgb(0.95, 0.1, 0.1),
+        //     rotate: degrees(-45),
+        // })
+
+        if(imgFlag) {
+
+            // 좌표 받아 오기
+
+            // 이미지 추가
+            const pngUrl = '../images/stamp2.png'
+            const pngImageBytes = await fetch(pngUrl).then((res) => res.arrayBuffer())
+            const pngImage = await pdfDoc.embedPng(pngImageBytes)
+            // const pngDims = pngImage.scale(0.5)
+            const pngDims = {
+                width : parseInt(document.getElementById('stamp_width').textContent),
+                height : parseInt(document.getElementById('stamp_width').textContent)
+            };
+
+            const stampDims = {
+                width : parseInt(document.getElementById('x_axis').textContent),
+                height : parseInt(document.getElementById('y_axis').textContent)
+            }
+            pages[0].drawImage(pngImage, {
+                x: pages[0].getWidth() / 2 - stampDims.width / 2 + 75,
+                y: pages[0].getHeight() / 2 - stampDims.height + 250,
+                width: pngDims.width,
+                height: pngDims.height,
+            })
+        }
+
+        // Serialize the PDFDocument to bytes (a Uint8Array)
+        //   const pdfBytes = await pdfDoc.save()
+
+        return await pdfDoc.saveAsBase64({ dataUri: false });
+
+                // Trigger the browser to download the PDF document
+        //   download(pdfBytes, "pdf-lib_modification_example.pdf", "application/pdf");
+        }
+
+        function aaa () {
+            Promise.all([makePDfAsBase64()]).then(values => { 
+                console.log(values); // [3, 1337, "foo"] 
+                document.getElementById('pdf').src = values;
+            });
+        }   
+
+        // aaa();
+
+        function bbb() {
+            Promise.all([makePDfAsBase64()]).then(values => { 
+                drawPdf(atob(values), )
+            });
+        }
+
+        // makePDfAsBase64();
+        // drawPdf();
+
+
+        function drawPdf(pdfData) {
+            var url = '../pdf/pdftest.pdf';
+
+            // Loaded via <script> tag, create shortcut to access PDF.js exports.
+            var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+            // The workerSrc property shall be specified.
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+            // Using DocumentInitParameters object to load binary data.
+            var loadingTask = pdfjsLib.getDocument({data: pdfData});
+            loadingTask.promise.then(function(pdf) {
+
+            console.log('PDF loaded', pdf);
+
+            // set global variable
+            pdfDoc = pdf;
+            document.getElementById('page_count').textContent = pdf.numPages;
+            
+            // Fetch the first page
+            var pageNumber = 1;
+            document.getElementById('page_num').textContent = pageNumber;
+            pdf.getPage(pageNumber).then(function(page) {
+                console.log('Page loaded');
+                
+                var scale = 3;
+                var viewport = page.getViewport({scale: scale});
+
+                // Prepare canvas using PDF page dimensions
+                // var canvas = document.getElementById('the-canvas');
+                // var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                canvasContext: context,
+                viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                console.log('Page rendered');
+                });
+            });
+            }, function (reason) {
+            // PDF loading error
+            console.error(reason);
+            });
+
+            
+        }
+
+        function onPrevPage() {
+            if (pageNum <= 1) {
+                return;
+            }
+            pageNum--;
+            queueRenderPage(pageNum);
+        }
+        
+        /**
+         * Displays next page.
+         */
+        function onNextPage() {
+            if (pageNum >= pdfDoc.numPages) {
+                return;
+            }
+            pageNum++;
+            queueRenderPage(pageNum);
+        }
+        
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+
+        function renderPage(num) {
+            pageRendering = true;
+            // Using promise to fetch the page
+            pdfDoc.getPage(num).then(function(page) {
+                var scale = 3;
+                var viewport = page.getViewport({scale: scale});
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+
+                // Wait for rendering to finish
+                renderTask.promise.then(function() {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    // New page rendering is pending
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+                });
+            });
+
+            document.getElementById('page_num').textContent = num;
+        }
+
+        function drawPdf2(pdfData) {
+
+            // Loaded via <script> tag, create shortcut to access PDF.js exports.
+            var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+            // The workerSrc property shall be specified.
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+            // Using DocumentInitParameters object to load binary data.
+            var loadingTask = pdfjsLib.getDocument({data: pdfData});
+            loadingTask.promise.then(function(pdf) {
+
+            console.log('PDF loaded', pdf);
+
+            // set global variable
+            pdfDoc2 = pdf;
+            // document.getElementById('page_count').textContent = pdf.numPages;
+            
+            // Fetch the first page
+            var pageNumber = 1;
+            // document.getElementById('page_num').textContent = pageNumber;
+            pdf.getPage(pageNumber).then(function(page) {
+                console.log('Page loaded');
+                
+                var scale = 3;
+                var viewport = page.getViewport({scale: scale});
+
+                // Prepare canvas using PDF page dimensions
+                // var canvas = document.getElementById('the-canvas');
+                // var context = canvas.getContext('2d');
+                canvas2.height = viewport.height;
+                canvas2.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                canvasContext: context2,
+                viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                console.log('Page rendered');
+                });
+            });
+            }, function (reason) {
+            // PDF loading error
+            console.error(reason);
+            });
+
+            
+        }
+
+            
+        function save () {
+            Promise.all([makePDfAsBase64(true)]).then(values => { 
+                drawPdf2(atob(values))
+            });
+        }
+
+        function download () {
+            Promise.all([makePDfAsBase64(true)]).then(values => { 
+                // drawPdf2(atob(values))
+                download(values, "pdf-lib_modification_example.pdf", "application/pdf");
+            });
+            
+        }
+
+        // ========================================
+        // position
+        // ========================================
+
+        // function writeMessage(x, y) {
+        //     // var context = canvas.getContext('2d');
+        //     // context.clearRect(0, 0, canvas.width, canvas.height);
+        //     // context.font = '18pt Calibri';
+        //     // context.fillStyle = 'black';
+        //     // context.fillText(message, 10, 25);
+
+        //     // console.log('message', x, y)
+
+        //     document.getElementById('x_axis').textContent = x;
+        //     document.getElementById('y_axis').textContent = y;
+        // }
+        // function getMousePos(canvas, evt) {
+        //     var rect = canvas.getBoundingClientRect();
+        //     return {
+        //         x: evt.clientX - rect.left,
+        //         y: evt.clientY - rect.top
+        //     };
+        // }
+        // var canvas = document.getElementById('the-canvas');
+        // var context = canvas.getContext('2d');
+
+        // canvas.addEventListener('mouseup', function(evt) {
+        //     var mousePos = getMousePos(canvas, evt);
+        //     var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+        //     writeMessage(mousePos.x, mousePos.y);
+        // }, false);
+
+        //=============================================
+        // event
+        //=============================================
+
+        document.getElementById('prev').addEventListener('click', onPrevPage);
+        document.getElementById('next').addEventListener('click', onNextPage);
+        document.getElementById('open').addEventListener('click', bbb);
+        document.getElementById('stamp').addEventListener('click', showStamp);
+        document.getElementById('save').addEventListener('click', save);
+        document.getElementById('download').addEventListener('click', download);
+        
+    });
+  </script>
+
+  <style>
+    .draggable {
+        background: url('./images/stamp2.png') no-repeat center;     
+        background-size: contain;
+        background-color: transparent;
+        position: relative;
+        z-index: 10;
+        width: 100px;
+        border: thin solid #ccc;
+        margin: .25em;
+        padding: 1em 2em;
+        /* background-color: #29e; */
+        /* color: #fff; */
+        text-align: center;
+
+        -ms-touch-action: none;
+            touch-action: none;
+    }
+
+    .dropzone-wrapper {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .dropzone {
+        overflow: hidden;
+        margin: .5em;
+        padding: 1em;
+        color: #666;
+        text-align: center;
+        background: #ccc;
+        line-height: 4em;
+        border: 4px dashed transparent;
+        transition: background .15s linear, border-color .15s linear;
+        width: 100%;
+        height: auto;
+    }
+
+  </style>
+</html>

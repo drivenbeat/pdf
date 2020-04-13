@@ -11,18 +11,18 @@
   </head>
 
   <body>
-    <p>Click the button to modify an existing PDF document with <code>pdf-lib</code></p>
+    <!-- <p>Click the button to modify an existing PDF document with <code>pdf-lib</code></p> -->
 
     
-    
-
     <div><button id="prev">Previous</button> &nbsp; &nbsp; <button id="next">Next</button></div>
     <br>
     <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
     <br>
-    <canvas id="the-canvas">
-    </canvas>
-    <div class="resize-drag"></div>
+    <canvas id="the-canvas"></canvas>
+
+    <div class="resize-drag">
+        <!-- <img src="./images/stamp2.png" alt=""> -->
+    </div>
   </body>
 
   <script>
@@ -120,15 +120,15 @@
         // Get the width and height of the first page
         const { width, height } = firstPage.getSize()
 
-        // Draw a string of text diagonally across the first page
-        firstPage.drawText('This text was added with JavaScript!', {
-            x: 5,
-            y: height / 2 + 300,
-            size: 50,
-            font: helveticaFont,
-            color: rgb(0.95, 0.1, 0.1),
-            rotate: degrees(-45),
-        })
+        // // Draw a string of text diagonally across the first page
+        // firstPage.drawText('This text was added with JavaScript!', {
+        //     x: 5,
+        //     y: height / 2 + 300,
+        //     size: 50,
+        //     font: helveticaFont,
+        //     color: rgb(0.95, 0.1, 0.1),
+        //     rotate: degrees(-45),
+        // })
 
         // 이미지 추가
         const pngUrl = '../images/stamp2.png'
@@ -198,7 +198,7 @@
             pdf.getPage(pageNumber).then(function(page) {
                 console.log('Page loaded');
                 
-                var scale = 1.5;
+                var scale = 1;
                 var viewport = page.getViewport({scale: scale});
 
                 // Prepare canvas using PDF page dimensions
@@ -260,8 +260,8 @@
             // Using promise to fetch the page
             pdfDoc.getPage(num).then(function(page) {
                 var viewport = page.getViewport({scale: scale});
-                // canvas.height = viewport.height;
-                // canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
                 // Render PDF page into canvas context
                 var renderContext = {
@@ -293,6 +293,18 @@
 
         // ===========================================
        
+
+
+
+        
+    interact('#the-canvas').on('ready', () => {
+    transformProp = 'transform' in document.body.style
+        ? 'transform' : 'webkitTransform' in document.body.style
+        ? 'webkitTransform' : 'mozTransform' in document.body.style
+            ? 'mozTransform' : 'oTransform' in document.body.style
+            ? 'oTransform' : 'msTransform' in document.body.style
+                ? 'msTransform' : null
+    })
     });
   </script>
 
@@ -336,8 +348,13 @@
         }
 
     .resize-drag {
-        background-color: blueviolet;
-        color: white;
+        /* background-image: url('./images/stamp2.png');
+        background-repeat: no-repeat;
+        background-position: center center; */
+        background: url('./images/stamp2.png') no-repeat center fixed;     
+        background-size: auto;
+        background-color: antiquewhite;
+        /* color: white; */
         font-size: 20px; 
         font-family: sans-serif;
         border-radius: 8px;
@@ -348,6 +365,15 @@
 
         /* This makes things *much* easier */
         box-sizing: border-box;
+    }
+
+    .image-container{
+        /* overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 300px;
+        height: 300px; */
     }
   </style>
 </html>
