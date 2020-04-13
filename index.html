@@ -1,0 +1,353 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.4.0"></script>
+    <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  </head>
+
+  <body>
+    <p>Click the button to modify an existing PDF document with <code>pdf-lib</code></p>
+
+    
+    
+
+    <div><button id="prev">Previous</button> &nbsp; &nbsp; <button id="next">Next</button></div>
+    <br>
+    <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+    <br>
+    <canvas id="the-canvas">
+    </canvas>
+    <div class="resize-drag"></div>
+  </body>
+
+  <script>
+    $( function() {
+
+        function drawStamp() {
+            interact('.resize-drag')
+            .resizable({
+                // resize from all edges and corners
+                edges: { left: true, right: true, bottom: true, top: true },
+
+                listeners: {
+                move (event) {
+                    var target = event.target
+                    var x = (parseFloat(target.getAttribute('data-x')) || 0)
+                    var y = (parseFloat(target.getAttribute('data-y')) || 0)
+
+                    // update the element's style
+                    target.style.width = event.rect.width + 'px'
+                    target.style.height = event.rect.height + 'px'
+
+                    // translate when resizing from top or left edges
+                    x += event.deltaRect.left
+                    y += event.deltaRect.top
+
+                    target.style.webkitTransform = target.style.transform =
+                    'translate(' + x + 'px,' + y + 'px)'
+
+                    target.setAttribute('data-x', x)
+                    target.setAttribute('data-y', y)
+                    target.textContent = Math.round(event.rect.width) + '\u00D7' + Math.round(event.rect.height)
+                }
+                },
+                modifiers: [
+                // keep the edges inside the parent
+                interact.modifiers.restrictEdges({
+                    outer: 'parent'
+                }),
+
+                // minimum size
+                interact.modifiers.restrictSize({
+                    min: { width: 100, height: 50 }
+                })
+                ],
+
+                inertia: true
+            })
+            .draggable({
+                listeners: { move: window.dragMoveListener },
+                inertia: true,
+                modifiers: [
+                interact.modifiers.restrictRect({
+                    restriction: 'parent',
+                    endOnly: true
+                })
+                ]
+            })
+        }
+
+        
+
+        // interact.js can also add DOM event listeners
+        // interact(document).on("DOMContentLoaded", resizeCanvases);
+        // interact(window).on("resize", resizeCanvases);
+
+//=========================================================================================================================
+
+        var pdfDoc = null,
+        pageNum = 1,
+        pageRendering = false,
+        pageNumPending = null,
+        scale = 0.8,    
+        canvas = document.getElementById('the-canvas'),
+        context = canvas.getContext('2d');
+
+
+        const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
+
+        async function makePDfAsBase64() {
+        // Fetch an existing PDF document
+        const url = '../pdf/pdftest.pdf'
+        //   const url = 'https://pdf-lib.js.org/assets/with_update_sections.pdf'
+            const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
+
+        // Load a PDFDocument from the existing PDF bytes
+        const pdfDoc = await PDFDocument.load(existingPdfBytes)
+
+        // Embed the Helvetica font
+        const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+
+        // Get the first page of the document
+        const pages = pdfDoc.getPages()
+        const firstPage = pages[0]
+
+        // Get the width and height of the first page
+        const { width, height } = firstPage.getSize()
+
+        // Draw a string of text diagonally across the first page
+        firstPage.drawText('This text was added with JavaScript!', {
+            x: 5,
+            y: height / 2 + 300,
+            size: 50,
+            font: helveticaFont,
+            color: rgb(0.95, 0.1, 0.1),
+            rotate: degrees(-45),
+        })
+
+        // 이미지 추가
+        const pngUrl = '../images/stamp2.png'
+        const pngImageBytes = await fetch(pngUrl).then((res) => res.arrayBuffer())
+        const pngImage = await pdfDoc.embedPng(pngImageBytes)
+        const pngDims = pngImage.scale(0.5)
+
+        pages[1].drawImage(pngImage, {
+            x: pages[1].getWidth() / 2 - pngDims.width / 2 + 75,
+            y: pages[1].getHeight() / 2 - pngDims.height + 250,
+            width: pngDims.width,
+            height: pngDims.height,
+        })
+
+
+        // Serialize the PDFDocument to bytes (a Uint8Array)
+        //   const pdfBytes = await pdfDoc.save()
+
+        return await pdfDoc.saveAsBase64({ dataUri: false });
+
+                // Trigger the browser to download the PDF document
+        //   download(pdfBytes, "pdf-lib_modification_example.pdf", "application/pdf");
+        }
+
+        function aaa () {
+            Promise.all([makePDfAsBase64()]).then(values => { 
+                console.log(values); // [3, 1337, "foo"] 
+                document.getElementById('pdf').src = values;
+            });
+        }   
+
+        // aaa();
+        bbb();
+
+        function bbb() {
+            Promise.all([makePDfAsBase64()]).then(values => { 
+                drawPdf(atob(values))
+            });
+        }
+
+        // makePDfAsBase64();
+        // drawPdf();
+
+
+        function drawPdf(pdfData) {
+            var url = '../pdf/pdftest.pdf';
+
+            // Loaded via <script> tag, create shortcut to access PDF.js exports.
+            var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+            // The workerSrc property shall be specified.
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+            // Using DocumentInitParameters object to load binary data.
+            var loadingTask = pdfjsLib.getDocument({data: pdfData});
+            loadingTask.promise.then(function(pdf) {
+
+            console.log('PDF loaded', pdf);
+
+            // set global variable
+            pdfDoc = pdf;
+            document.getElementById('page_count').textContent = pdf.numPages;
+            
+            // Fetch the first page
+            var pageNumber = 1;
+            document.getElementById('page_num').textContent = pageNumber;
+            pdf.getPage(pageNumber).then(function(page) {
+                console.log('Page loaded');
+                
+                var scale = 1.5;
+                var viewport = page.getViewport({scale: scale});
+
+                // Prepare canvas using PDF page dimensions
+                // var canvas = document.getElementById('the-canvas');
+                // var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                canvasContext: context,
+                viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                console.log('Page rendered');
+                });
+            });
+            }, function (reason) {
+            // PDF loading error
+            console.error(reason);
+            });
+
+            
+        }
+
+        function onPrevPage() {
+            if (pageNum <= 1) {
+                return;
+            }
+            pageNum--;
+            queueRenderPage(pageNum);
+        }
+        document.getElementById('prev').addEventListener('click', onPrevPage);
+
+        /**
+         * Displays next page.
+         */
+        function onNextPage() {
+            if (pageNum >= pdfDoc.numPages) {
+                return;
+            }
+            pageNum++;
+            queueRenderPage(pageNum);
+        }
+        document.getElementById('next').addEventListener('click', onNextPage);
+
+
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+
+        function renderPage(num) {
+            pageRendering = true;
+            // Using promise to fetch the page
+            pdfDoc.getPage(num).then(function(page) {
+                var viewport = page.getViewport({scale: scale});
+                // canvas.height = viewport.height;
+                // canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+
+                // Wait for rendering to finish
+                renderTask.promise.then(function() {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    // New page rendering is pending
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+                });
+            });
+
+            document.getElementById('page_num').textContent = num;
+
+            drawStamp();
+        }
+
+        // stamp 파일을 읽어서 canvas 에 올려 줌
+        function openStamp() {
+
+        }
+
+        // ===========================================
+       
+    });
+  </script>
+
+  <style>
+
+    #the-canvas {
+        border: 1px solid black;
+        direction: ltr;
+    }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        }
+
+        p {
+        font-family: helvetica;
+        font-size: 24px;
+        text-align: center;
+        margin: 25px;
+        }
+
+        .small {
+        font-family: helvetica;
+        font-size: 18px;
+        text-align: center;
+        margin: 25px;
+        }
+
+        button {
+        background-color: #008CBA;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        font-size: 16px;
+        }
+
+    .resize-drag {
+        background-color: blueviolet;
+        color: white;
+        font-size: 20px; 
+        font-family: sans-serif;
+        border-radius: 8px;
+        padding: 20px;
+        touch-action: none;
+
+        width: 120px;
+
+        /* This makes things *much* easier */
+        box-sizing: border-box;
+    }
+  </style>
+</html>
