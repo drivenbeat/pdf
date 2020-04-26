@@ -11,6 +11,7 @@
     <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
     <script src="https://unpkg.com/downloadjs@1.4.7"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="/js/fabric.min.js"></script>
   </head>
 
   <body>
@@ -73,7 +74,8 @@
         <div class="col-md-6">
           <div class="card flex-md-row mb-4 box-shadow h-md-250">
             <div id="canvasParent" class="card-body d-flex flex-column align-items-start">
-                <canvas id="the-canvas" class="dropzone js-drop"></canvas>
+                <canvas id="the-canvas"></canvas>
+                <input type="button" value="Some button" id="inline-btn">
                 <!-- <div id="drag1" class="draggable js-drag" style="display: none;">Drag me…</div> -->
             </div>
           </div>
@@ -81,7 +83,7 @@
         <div class="col-md-6">
           <div class="card flex-md-row mb-4 box-shadow h-md-250">
             <div class="card-body d-flex flex-column align-items-start">
-                <canvas id="the-canvas2" class="dropzone js-drop"></canvas>
+                <canvas id="the-canvas2"></canvas>
             </div>
           </div>
         </div>
@@ -93,159 +95,287 @@
   <script>
     $( function() {
 
-        let transformProp
-        const dragPositions = [1, 2, 3, 4].reduce((acc, n) => {
-            acc[`drag${n}`] = { x: 0, y: 0 }
-            return acc
-        }, {})
+        function addImage() {
+            // var canvas = this.__canvas = new fabric.Canvas('the-canvas');
+            // // var canvasEl = document.getElementById('the-canvas');
+            // fabric.Image.fromURL('./images/stamp1.png', function(img) {
+            //     var oImg = img.set({ left: 0, top: 0}).scale(0.25);
+            //     console.log('oImg', oImg)
+            //     canvas.add(oImg);
+            // });
+
+            
+        }
+
+        
+
+        function Add() {
+            var canvas = this.__canvas = new fabric.Canvas('the-canvas');
+            fabric.Object.prototype.transparentCorners = false;
+
+            var $ = function(id){return document.getElementById(id)};
+
+             fabric.Image.fromURL('./images/stamp1.png', function(img) {
+                var oImg = img.set({ left: 0, top: 0}).scale(0.25);
+              
+                canvas.add(oImg);
+                canvas.setActiveObject(oImg);
+            });
+
+            canvas.on('mouse:up',function(event){
+            if(canvas.getActiveObject()){
+                console.log(event.e);
+            }});
+
+
+            // var canvas = this.__canvas = new fabric.Canvas('the-canvas');
+            // fabric.Object.prototype.transparentCorners = false;
+            // fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
+
+            // fabric.Canvas.prototype.getAbsoluteCoords = function(object) {
+            //     return {
+            //     left: object.left + this._offset.left,
+            //     top: object.top + this._offset.top
+            //     };
+            // }
+
+            
+
+            // function positionBtn(obj) {
+            //     var btn = document.getElementById('inline-btn'),
+            //     btnWidth = 85,
+            //     btnHeight = 18;
+            //     var absCoords = canvas.getAbsoluteCoords(obj);
+
+            //     btn.style.left = (absCoords.left - btnWidth / 2) + 'px';
+            //     btn.style.top = (absCoords.top - btnHeight / 2) + 'px';
+            // }
+
+            // fabric.Image.fromURL('./images/stamp1.png', function(img) {
+
+            //     canvas.add(img.set({ left: 250, top: 250, angle: 30 }).scale(0.25));
+
+            //     img.on('moving', function() { positionBtn(img) });
+            //     img.on('scaling', function() { positionBtn(img) });
+            //     positionBtn(img);
+            // });
+
+
+            // var canvas = this.__canvas = new fabric.StaticCanvas('the-canvas');
+            // // create a rect object
+            // var deleteIcon = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='Ebene_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='595.275px' height='595.275px' viewBox='200 215 230 470' xml:space='preserve'%3E%3Ccircle style='fill:%23F44336;' cx='299.76' cy='439.067' r='218.516'/%3E%3Cg%3E%3Crect x='267.162' y='307.978' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -222.6202 340.6915)' style='fill:white;' width='65.545' height='262.18'/%3E%3Crect x='266.988' y='308.153' transform='matrix(0.7071 0.7071 -0.7071 0.7071 398.3889 -83.3116)' style='fill:white;' width='65.544' height='262.179'/%3E%3C/g%3E%3C/svg%3E";
+
+            // // var img = document.createElement('img');
+            // fabric.Object.prototype.transparentCorners = false;
+            // fabric.Object.prototype.cornerColor = 'blue';
+            // fabric.Object.prototype.cornerStyle = 'circle';
+
+            // fabric.Image.fromURL('./images/stamp1.png', function(img) {
+            //     var oImg = img.set({ left: 0, top: 0}).scale(0.25);
+              
+            //     canvas.add(oImg);
+            //     // canvas.setActiveObject(oImg);
+            // });
+
+
+            // img.src = deleteIcon;
+
+      
+
+            // var rect = new fabric.Rect({
+            //     left: 100,
+            //     top: 50,
+            //     fill: 'yellow',
+            //     width: 200,
+            //     height: 100,
+            //     objectCaching: false,
+            //     stroke: 'lightgreen',
+            //     strokeWidth: 4,
+            // });
+
+        }
+
+        // fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+        //     position: { x: 0.5, y: -0.5 },
+        //     offsetY: 16,
+        //     cursorStyle: 'pointer',
+        //     mouseUpHandler: deleteObject,
+        //     render: renderIcon,
+        //     cornerSize: 24
+        // });
+
+        
+
+        function deleteObject(eventData, target) {
+            var canvas = target.canvas;
+                canvas.remove(target);
+            canvas.requestRenderAll();
+        }
+
+        function renderIcon(ctx, left, top, styleOverride, fabricObject) {
+            var size = this.cornerSize;
+            ctx.save();
+            ctx.translate(left, top);
+            ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+            ctx.drawImage(img, -size/2, -size/2, size, size);
+            ctx.restore();
+        }
+
+        
+
+        // let transformProp
+        // const dragPositions = [1, 2, 3, 4].reduce((acc, n) => {
+        //     acc[`drag${n}`] = { x: 0, y: 0 }
+        //     return acc
+        // }, {})
                 
-        // setup draggable elements.
-        interact('.js-drag')
-        .resizable({
-            // resize from all edges and corners
-            edges: { left: true, right: true, bottom: true, top: true },
+        // // setup draggable elements.
+        // interact('.js-drag')
+        // .resizable({
+        //     // resize from all edges and corners
+        //     edges: { left: true, right: true, bottom: true, top: true },
 
-            listeners: {
-                move (event) {
-                    var target = event.target
-                    var x = (parseFloat(target.getAttribute('data-x')) || 0)
-                    var y = (parseFloat(target.getAttribute('data-y')) || 0)
+        //     listeners: {
+        //         move (event) {
+        //             var target = event.target
+        //             var x = (parseFloat(target.getAttribute('data-x')) || 0)
+        //             var y = (parseFloat(target.getAttribute('data-y')) || 0)
 
-                    // update the element's style
-                    target.style.width = event.rect.width + 'px'
-                    target.style.height = event.rect.height + 'px'
+        //             // update the element's style
+        //             target.style.width = event.rect.width + 'px'
+        //             target.style.height = event.rect.height + 'px'
 
-                    // translate when resizing from top or left edges
-                    x += event.deltaRect.left
-                    y += event.deltaRect.top
+        //             // translate when resizing from top or left edges
+        //             x += event.deltaRect.left
+        //             y += event.deltaRect.top
 
-                    target.style.webkitTransform = target.style.transform =
-                    'translate(' + x + 'px,' + y + 'px)'
+        //             target.style.webkitTransform = target.style.transform =
+        //             'translate(' + x + 'px,' + y + 'px)'
 
-                    target.setAttribute('data-x', x)
-                    target.setAttribute('data-y', y)
-                    target.textContent = Math.round(event.rect.width) + '\u00D7' + Math.round(event.rect.height)
+        //             target.setAttribute('data-x', x)
+        //             target.setAttribute('data-y', y)
+        //             target.textContent = Math.round(event.rect.width) + '\u00D7' + Math.round(event.rect.height)
 
-                    // width
-                    document.getElementById('stamp_width').textContent = Math.round(event.rect.width);
-                    document.getElementById('stamp_height').textContent = Math.round(event.rect.height);
-                }
-            },
-            modifiers: [
-            // keep the edges inside the parent
-            interact.modifiers.restrictEdges({
-                outer: 'parent'
-            }),
+        //             // width
+        //             document.getElementById('stamp_width').textContent = Math.round(event.rect.width);
+        //             document.getElementById('stamp_height').textContent = Math.round(event.rect.height);
+        //         }
+        //     },
+        //     modifiers: [
+        //     // keep the edges inside the parent
+        //     interact.modifiers.restrictEdges({
+        //         outer: 'parent'
+        //     }),
 
-            // minimum size
-            interact.modifiers.restrictSize({
-                min: { width: 50, height: 50 },
-                max: { width: 150, height: 150 },
-            })
-            ],
+        //     // minimum size
+        //     interact.modifiers.restrictSize({
+        //         min: { width: 50, height: 50 },
+        //         max: { width: 150, height: 150 },
+        //     })
+        //     ],
 
-            // inertia: true
-        })
-        .draggable({
-            listeners: {
-                start (event) {
-                    // console.log('event.target.id', event.target.id)
-                    const position = dragPositions[event.target.id]
-                    // console.log('position', position)
-                    position.x = parseInt(event.target.getAttribute('data-x'), 10) || 0
-                    position.y = parseInt(event.target.getAttribute('data-y'), 10) || 0
-                },
-                move (event) {
-                    const position = dragPositions[event.target.id]
-                    position.x += event.dx
-                    position.y += event.dy
+        //     // inertia: true
+        // })
+        // .draggable({
+        //     listeners: {
+        //         start (event) {
+        //             // console.log('event.target.id', event.target.id)
+        //             const position = dragPositions[event.target.id]
+        //             // console.log('position', position)
+        //             position.x = parseInt(event.target.getAttribute('data-x'), 10) || 0
+        //             position.y = parseInt(event.target.getAttribute('data-y'), 10) || 0
+        //         },
+        //         move (event) {
+        //             const position = dragPositions[event.target.id]
+        //             position.x += event.dx
+        //             position.y += event.dy
 
-                    if (transformProp) {
-                    event.target.style[transformProp] =
-                        'translate(' + position.x + 'px, ' + position.y + 'px)'
-                    }
-                    else {
-                    event.target.style.left = position.x + 'px'
-                    event.target.style.top  = position.y + 'px'
-                    }
-                },
-                end (event) {
-                    const position = dragPositions[event.target.id]
-                    event.target.setAttribute('data-x', position.x)
-                    event.target.setAttribute('data-y', position.y)
+        //             if (transformProp) {
+        //             event.target.style[transformProp] =
+        //                 'translate(' + position.x + 'px, ' + position.y + 'px)'
+        //             }
+        //             else {
+        //             event.target.style.left = position.x + 'px'
+        //             event.target.style.top  = position.y + 'px'
+        //             }
+        //         },
+        //         end (event) {
+        //             const position = dragPositions[event.target.id]
+        //             event.target.setAttribute('data-x', position.x)
+        //             event.target.setAttribute('data-y', position.y)
 
-                    var canvas = document.getElementById('the-canvas');
-                    var rect = canvas.getBoundingClientRect();
-                    console.log('rect', rect, rect.left, rect.top)
-                    console.log('position', position.x, position.y)
-                    var ret =  {
-                        // x: position.x - rect.left,
-                        // y: position.y - rect.top
-                        x: position.x,
-                        y: position.y
-                    }
+        //             var canvas = document.getElementById('the-canvas');
+        //             var rect = canvas.getBoundingClientRect();
+        //             console.log('rect', rect, rect.left, rect.top)
+        //             console.log('position', position.x, position.y)
+        //             var ret =  {
+        //                 // x: position.x - rect.left,
+        //                 // y: position.y - rect.top
+        //                 x: position.x,
+        //                 y: position.y
+        //             }
 
-                    // axis
-                    document.getElementById('x_axis').textContent = ret.x;
-                    document.getElementById('y_axis').textContent = ret.y;
+        //             // axis
+        //             document.getElementById('x_axis').textContent = ret.x;
+        //             document.getElementById('y_axis').textContent = ret.y;
 
-                },
-            },
-            modifiers: [
-                interact.modifiers.restrict({
-                    restriction: 'parent',
-                    endOnly: true
-                })
-            ]
-        })
+        //         },
+        //     },
+        //     modifiers: [
+        //         interact.modifiers.restrict({
+        //             restriction: 'parent',
+        //             endOnly: true
+        //         })
+        //     ]
+        // })
 
-        function setupDropzone (target, accept) {
-            interact(target)
-                .dropzone({
-                accept: accept,
-                ondropactivate: function (event) {
-                    // addClass(event.relatedTarget, '-drop-possible')
-                },
-                ondropdeactivate: function (event) {
-                    // removeClass(event.relatedTarget, '-drop-possible')
-                },
-                })
-                .on('dropactivate', (event) => {
-                const active = event.target.getAttribute('active') | 0
+        // function setupDropzone (target, accept) {
+        //     interact(target)
+        //         .dropzone({
+        //         accept: accept,
+        //         ondropactivate: function (event) {
+        //             // addClass(event.relatedTarget, '-drop-possible')
+        //         },
+        //         ondropdeactivate: function (event) {
+        //             // removeClass(event.relatedTarget, '-drop-possible')
+        //         },
+        //         })
+        //         .on('dropactivate', (event) => {
+        //         const active = event.target.getAttribute('active') | 0
 
-                // change style if it was previously not active
-                if (active === 0) {
-                    // addClass(event.target, '-drop-possible')
-                    event.target.textContent = 'Drop me here!'
-                }
+        //         // change style if it was previously not active
+        //         if (active === 0) {
+        //             // addClass(event.target, '-drop-possible')
+        //             event.target.textContent = 'Drop me here!'
+        //         }
 
-                event.target.setAttribute('active', active + 1)
-                })
-                .on('dropdeactivate', (event) => {
-                const active = event.target.getAttribute('active') | 0
+        //         event.target.setAttribute('active', active + 1)
+        //         })
+        //         .on('dropdeactivate', (event) => {
+        //         const active = event.target.getAttribute('active') | 0
 
-                // change style if it was previously active
-                // but will no longer be active
-                if (active === 1) {
-                    // removeClass(event.target, '-drop-possible')
-                    event.target.textContent = 'Dropzone'
-                }
+        //         // change style if it was previously active
+        //         // but will no longer be active
+        //         if (active === 1) {
+        //             // removeClass(event.target, '-drop-possible')
+        //             event.target.textContent = 'Dropzone'
+        //         }
 
-                event.target.setAttribute('active', active - 1)
-                })
-                .on('dragenter', (event) => {
-                    // addClass(event.target, '-drop-over')
-                    event.relatedTarget.textContent = 'I\'m in'
-                })
-                .on('dragleave', (event) => {
-                    // removeClass(event.target, '-drop-over')
-                    event.relatedTarget.textContent = 'Drag me…'
-                })
-                .on('drop', (event) => {
-                    // removeClass(event.target, '-drop-over')
-                    event.relatedTarget.textContent = 'Dropped'
-                })
-            }
+        //         event.target.setAttribute('active', active - 1)
+        //         })
+        //         .on('dragenter', (event) => {
+        //             // addClass(event.target, '-drop-over')
+        //             event.relatedTarget.textContent = 'I\'m in'
+        //         })
+        //         .on('dragleave', (event) => {
+        //             // removeClass(event.target, '-drop-over')
+        //             event.relatedTarget.textContent = 'Drag me…'
+        //         })
+        //         .on('drop', (event) => {
+        //             // removeClass(event.target, '-drop-over')
+        //             event.relatedTarget.textContent = 'Dropped'
+        //         })
+        //     }
 
         function showStamp() {
             // document.getElementById('drag1').style.display = 'block';
@@ -255,14 +385,18 @@
             //     stamp.remove();
             // }
 
-            var div = document.createElement("div");
-            div.id = "drag1";
-            div.textContent = "drag me..."
-            div.className = "draggable js-drag"
-            var canvas = document.getElementById("canvasParent");
-            canvas.append(div);
+            // var div = document.createElement("div");
+            // div.id = "drag1";
+            // div.textContent = "drag me..."
+            // div.className = "draggable js-drag"
+            // var canvas = document.getElementById("canvasParent");
+            // canvas.append(div);
 
-            setupDropzone('#the-canvas', '#drag1')
+            // setupDropzone('#the-canvas', '#drag1')
+
+            console.log('add image')
+            // addImage();
+            Add();
         }
 
         //======================================================================================================================
@@ -430,6 +564,9 @@
                 // .then(function (svg) {
                 //     container.appendChild(svg);
                 // });
+
+                //
+                
             });
             }, function (reason) {
             // PDF loading error
